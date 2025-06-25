@@ -20,7 +20,7 @@ struct AlertContext {
                                               dismissButton: .default(Text("OK")))
     
     static let invalidScannedType = AlertItem(title: "Invalid Scanned Value",
-                                              message: "The scanned value is not valid. This app scans EAN-8 and EAN-13.",
+                                              message: "The scanned value is not valid. This app only scans EAN-8 and EAN-13.",
                                               dismissButton: .default(Text("OK")))
 
 }
