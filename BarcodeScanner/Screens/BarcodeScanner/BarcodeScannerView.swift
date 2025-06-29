@@ -13,30 +13,47 @@ struct BarcodeScannerView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                ScannerView(scannedCode: $viewModel.scannedCode, alertItem: $viewModel.alertItem)
-                    .frame(maxWidth: .infinity, maxHeight: 300)
-                
-                Spacer()
-                    .frame(height: 60)
-                
-                Label("Scanned Barcode:", systemImage: "barcode.viewfinder")
-                    .font(.title)
-                
-                Text(viewModel.statusText)
-                    .bold()
-                    .font(.largeTitle)
-                    .foregroundStyle(viewModel.statusTextColor)
-                    .padding()
-            }
-            .navigationTitle("Barcode Scanner")
-            .alert(item: $viewModel.alertItem) { alertItem in
-                Alert(title: Text(alertItem.title),
-                      message: Text(alertItem.message),
-                      dismissButton: alertItem.dismissButton)
+            if #available(iOS 17.0, *) {
+                VStack {
+                    ScannerView(scannedCode: $viewModel.scannedCode, alertItem: $viewModel.alertItem)
+                        .frame(maxWidth: .infinity, maxHeight: 300)
+                    
+                    Spacer()
+                        .frame(height: 60)
+                    
+                    Label("Scanned Barcode:", systemImage: "barcode.viewfinder")
+                        .font(.title)
+                    
+                    Text(viewModel.statusText)
+                        .bold()
+                        .font(.largeTitle)
+                        .foregroundStyle(viewModel.statusTextColor)
+                        .padding()
+                }
+                .navigationTitle("Barcode Scanner")
+                .alert(item: $viewModel.alertItem) { alertItem in
+                    Alert(title: Text(alertItem.title),
+                          message: Text(alertItem.message),
+                          dismissButton: alertItem.dismissButton)
+                }
+                .onChange(of: viewModel.scannedCode) { oldValue, newValue in
+                    if !newValue.isEmpty {
+                        openProductInBrowser(barcode: newValue)
+                    }
+                }
+            } else {
+                // Fallback on earlier versions
             }
         }
         
+    }
+    
+    private func openProductInBrowser(barcode: String) {
+        let productURL = "https://www.upcitemdb.com/upc/\(barcode)"
+        
+        if let url = URL(string: productURL) {
+            UIApplication.shared.open(url)
+        }
     }
 }
 
