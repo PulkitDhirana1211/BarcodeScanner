@@ -38,7 +38,9 @@ struct BarcodeScannerView: View {
                 }
                 .onChange(of: viewModel.scannedCode) { oldValue, newValue in
                     if !newValue.isEmpty {
-                        openProductInBrowser(barcode: newValue)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            openProductInBrowser(barcode: newValue)
+                        }
                     }
                 }
             } else {

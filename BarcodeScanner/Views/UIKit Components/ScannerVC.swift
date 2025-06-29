@@ -24,6 +24,7 @@ final class ScannerVC: UIViewController {
     let captureSession = AVCaptureSession()
     var previewLayer: AVCaptureVideoPreviewLayer?
     weak var scannerDelegate: ScannerVCDelegate?
+    private var hasScanned = false
     
     init(scannerVCDelegate: ScannerVCDelegate) {
         super.init(nibName: nil, bundle: nil)
@@ -48,6 +49,13 @@ final class ScannerVC: UIViewController {
         }
         
         previewLayer.frame = view.layer.bounds
+    }
+    
+    func restartScanning() {
+        hasScanned = false
+        DispatchQueue.global().async { [weak self] in
+            self?.captureSession.startRunning()
+        }
     }
     
     private func setupCaptureSession() {
@@ -103,6 +111,10 @@ extension ScannerVC: AVCaptureMetadataOutputObjectsDelegate {
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         
+        guard !hasScanned else {
+            return
+        }
+        
         guard let object = metadataObjects.first else {
             scannerDelegate?.didSurface(error: .invalidScannedValue)
             return
@@ -116,6 +128,17 @@ extension ScannerVC: AVCaptureMetadataOutputObjectsDelegate {
         guard let barcode = machineReadableObject.stringValue else {
             scannerDelegate?.didSurface(error: .invalidScannedValue)
             return
+        }
+        
+        hasScanned = true
+        
+        DispatchQueue.global().async { [weak self] in
+            
+            guard let self = self else {
+                return
+            }
+            
+            self.captureSession.stopRunning()
         }
         
         scannerDelegate?.didFind(barcode: barcode)
