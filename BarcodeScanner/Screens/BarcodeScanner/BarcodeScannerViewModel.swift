@@ -10,6 +10,7 @@ import SwiftUI
 final class BarcodeScannerViewModel: ObservableObject {
     @Published var scannedCode: String = ""
     @Published var alertItem: AlertItem?
+    @Published var shouldResetScanner: Bool = false
     
     var statusText: String {
         scannedCode.isEmpty ? "Not Yet Scanned" : scannedCode
@@ -17,5 +18,10 @@ final class BarcodeScannerViewModel: ObservableObject {
     
     var statusTextColor: Color {
         scannedCode.isEmpty ? .red : .green
+    }
+    
+    func resetScanner() {
+        scannedCode = ""
+        shouldResetScanner = true
     }
 }

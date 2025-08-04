@@ -11,6 +11,7 @@ struct ScannerView: UIViewControllerRepresentable {
     
     @Binding var scannedCode: String
     @Binding var alertItem: AlertItem?
+    @Binding var shouldReset: Bool
     
     func makeCoordinator() -> Coordinator {
         return Coordinator(scannedView: self)
@@ -21,7 +22,14 @@ struct ScannerView: UIViewControllerRepresentable {
         ScannerVC(scannerVCDelegate: context.coordinator)
     }
     
-    func updateUIViewController(_ uiViewController: ScannerVC, context: Context) { }
+    func updateUIViewController(_ uiViewController: ScannerVC, context: Context) {
+        if shouldReset {
+            uiViewController.resetScanner()
+            DispatchQueue.main.async {
+                shouldReset = false
+            }
+        }
+    }
     
     // Coordinator listens to ScannerVCDelegate (UI View Controller)
     
@@ -38,12 +46,23 @@ struct ScannerView: UIViewControllerRepresentable {
         }
         
         func didSurface(error: CameraError) {
-            switch error {
-            case .invalidDeviceInput:
-                scannedView.alertItem = AlertContext.invalidDeviceInput
-            case .invalidScannedValue:
-                scannedView.alertItem = AlertContext.invalidScannedType
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                
+                switch error {
+                case .invalidDeviceInput:
+                    self.scannedView.alertItem = AlertContext.invalidDeviceInput
+                    
+                case .invalidScannedValue:
+                    self.scannedView.alertItem = AlertContext.invalidScannedType
+                }
             }
+        }
+        
+        func resetScanner() {
+            // This will be handled by the UIViewControllerRepresentable
         }
         
         
@@ -51,5 +70,5 @@ struct ScannerView: UIViewControllerRepresentable {
 }
 
 #Preview {
-    ScannerView(scannedCode: .constant("123456"), alertItem: .constant(AlertItem(title: "", message: "", dismissButton: .default(Text("")))))
+    ScannerView(scannedCode: .constant("123456"), alertItem: .constant(AlertItem(title: "", message: "", dismissButton: .default(Text("")))), shouldReset: .constant(false))
 }

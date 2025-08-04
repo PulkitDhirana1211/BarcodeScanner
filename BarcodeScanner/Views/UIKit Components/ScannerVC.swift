@@ -17,6 +17,7 @@ enum CameraError {
 protocol ScannerVCDelegate: AnyObject {
     func didFind(barcode: String)
     func didSurface(error: CameraError)
+    func resetScanner()
 }
 
 final class ScannerVC: UIViewController {
@@ -52,6 +53,13 @@ final class ScannerVC: UIViewController {
     }
     
     func restartScanning() {
+        hasScanned = false
+        DispatchQueue.global().async { [weak self] in
+            self?.captureSession.startRunning()
+        }
+    }
+    
+    func resetScanner() {
         hasScanned = false
         DispatchQueue.global().async { [weak self] in
             self?.captureSession.startRunning()
@@ -101,7 +109,7 @@ final class ScannerVC: UIViewController {
                 return
         }
             
-            self.captureSession.startRunning()
+        self.captureSession.startRunning()
         }
         
     }
@@ -139,6 +147,7 @@ extension ScannerVC: AVCaptureMetadataOutputObjectsDelegate {
             }
             
             self.captureSession.stopRunning()
+            
         }
         
         scannerDelegate?.didFind(barcode: barcode)

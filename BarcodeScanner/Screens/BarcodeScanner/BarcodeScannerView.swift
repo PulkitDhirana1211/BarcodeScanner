@@ -15,7 +15,7 @@ struct BarcodeScannerView: View {
         NavigationView {
             if #available(iOS 17.0, *) {
                 VStack {
-                    ScannerView(scannedCode: $viewModel.scannedCode, alertItem: $viewModel.alertItem)
+                    ScannerView(scannedCode: $viewModel.scannedCode, alertItem: $viewModel.alertItem, shouldReset: $viewModel.shouldResetScanner)
                         .frame(maxWidth: .infinity, maxHeight: 300)
                     
                     Spacer()
@@ -40,6 +40,10 @@ struct BarcodeScannerView: View {
                     if !newValue.isEmpty {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                             openProductInBrowser(barcode: newValue)
+                            // Reset scanner after opening browser
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                viewModel.resetScanner()
+                            }
                         }
                     }
                 }
